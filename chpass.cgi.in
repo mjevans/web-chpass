@@ -1,0 +1,51 @@
+#!/bin/sh
+#
+# chpass.cgi - This small front-end script initializes the environment
+# with site-specific configuration information, and then invokes the
+# "chpass" processor.
+#
+
+#
+# CHPASS_LIBDIR - Pathname to the "web-chpass" library.
+#
+CHPASS_LIBDIR='%LIBDIR%'
+export CHPASS_LIBDIR
+
+#
+# CHPASS_TEMPLATE - Name of the HTML template to use.  Resides
+# in $CHPASS_LIBDIR.
+#
+CHPASS_TEMPLATE='chpass.tmpl'
+export CHPASS_TEMPLATE
+
+#
+# CHPASS_BADPW_CHECKS - Bad password check mode.  Possible values are:
+# "enabled", "disabled", or "optional".
+#
+CHPASS_BADPW_CHECKS='%BADPW_CHECKS%'
+export CHPASS_BADPW_CHECKS
+
+#
+# FORCE_HTTPS - Force insecure connections (http) to secure connections
+# (https).  Possible values are: enabled, disabled.
+#
+FORCE_HTTPS='%FORCE_HTTPS%'
+export FORCE_HTTPS
+
+#
+# Go exec the chpass processor - should not return.
+#
+exec $CHPASS_LIBDIR/chpass-cgi.pl
+
+#
+# Oops!
+#
+cat <<__EOT__
+Content-Type: text/plain
+
+SYSTEM ERROR:  Cannot run $CHPASS_LIBDIR/chpass-cgi.pl
+Please notify system administrator of this problem.
+__EOT__
+
+exit 0
+
