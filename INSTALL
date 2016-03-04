@@ -134,3 +134,16 @@ The available template variables are:
 	form.badpw_check - Default value (1 or 0) of the bad password
 	check selection (if enabled).
 
+
+=== LDAP Notes
+
+This package can be used even if the user databsae is in LDAP.
+
+If your /etc/pam.d/passwd file is already setup for LDAP, that same
+configuration will be used for "nipasswd".
+
+The only thing you'll need to do is ensure that both "rootpwmoddn" and
+"rootpwmodpw" are defined in your /etc/nslcd.conf file. That's needed
+so the root user can change other users' passwords.
+
+
