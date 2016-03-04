@@ -1,5 +1,8 @@
 # Installation Instructions for the "web-chpass" Package
 
+You can view a formatted version of this document here:
+https://github.com/chip-rosenthal/web-chpass/blob/master/INSTALL.md
+
 ## STEP 0: Prerequisites
 
 To build and install this package, you will need the essential
@@ -105,34 +108,26 @@ If you wish, you can customize the "chpass.tmpl" file.
 The template is implemented with the Perl Template Toolkit
 (http://template-toolkit.org/).
 
-The template must submit (POST) a form with the following
-parameters:
+The template must produce a web page that submits (POST) a form with
+the following parameters:
 
-	* action - Value must be "chpass".
-	* strict_checks - 1 to enable checks for bad passwords. This is
-	  ignored unless bad password checking is configured as optional.
-	* username
-	* old_passwd
-	* new_passwd
-	* new_passwd2
+* action - Value must be "chpass".
+* username
+* old_passwd
+* new_passwd
+* new_passwd2
 
 The available template variables are:
 
-	message.content - If not empty, a status message to display.
+* message.content - If not empty, a status message to display.
 
-	message.class - The class of the status message.  Either "alert"
-	(default) or "success".
+* message.class - The class of the status message.  Either "alert"
+  (default) or "success".
 
-	form.enable - Boolean true if the change password form should
-	be displayed.
+* form.enable - Boolean true if the change password form should
+  be displayed.
 
-	form.enable_badpw_check - Boolean true if the user should be
-	given the option of enabling/disabling the bad password checks.
-
-	form.username - Default value of the username field.
-
-	form.badpw_check - Default value (1 or 0) of the bad password
-	check selection (if enabled).
+* form.username - Default value of the username field.
 
 
 ## LDAP Notes
