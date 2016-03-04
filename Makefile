@@ -1,3 +1,15 @@
+#
+# Part of the "web-chpass" package.
+# https://github.com/chip-rosenthal/web-chpass
+#
+# Chip Rosenthal
+# <chip@unicom.com>
+#
+
+##############################################################################
+#
+# The following defintions MUST be adjusted for your installation.
+#
 
 #
 # Minimum UID settings, to protect system accounts.  nipasswd will refuse to
@@ -7,24 +19,25 @@ MIN_AUTH_UID = 100
 MIN_CHANGE_UID = 100
 
 #
-# Bad password checking.  Possible values are:  enabled, disabled, optional.
+# If true (non-zero), enable check for bad passwords.
 #
-#BADPW_CHECKS = enabled
-#BADPW_CHECKS = disabled
-BADPW_CHECKS = optional
+ENABLE_BADPW_CHECK = 1
+#ENABLE_BADPW_CHECK = 0
 
 #
-# Force insecure connections (http) to secure connections (https).
-# Possible values are: enabled, disabled.
+# If true (non-zero), redirect an insecure connection (http) to a secure
+# connection (https).
 #
-#FORCE_HTTPS = disabled
-FORCE_HTTPS = enabled
+FORCE_HTTPS = 1
+#FORCE_HTTPS = 0
 
 #
 # The GID your web server uses when running CGIs.  For security reasons, the
 # privileged "nipasswd" will be installed with use restricted to this group.
+# Debian systems use "www-data". Red Hat systems use "apache".
 #
 CGI_GROUP = www-data
+#CGI_GROUP = apache
 
 #
 # The web-chpass support files installed in this directory.  If the
@@ -58,6 +71,7 @@ DIR_PAMD = /etc/pam.d
 # end of configuration settings
 #
 ##############################################################################
+
 
 CC = gcc
 OPTIM = -O2 -Wall

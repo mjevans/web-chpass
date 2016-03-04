@@ -57,6 +57,8 @@ The layers are:
 
 ## Author
 
+This document is part of the "web-chpass" package.
+https://github.com/chip-rosenthal/web-chpass
+
 Chip Rosenthal
-Unicom Systems Development
 <chip@unicom.com>

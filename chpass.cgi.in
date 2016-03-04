@@ -1,8 +1,16 @@
 #!/bin/sh
 #
-# chpass.cgi - This small front-end script initializes the environment
+# chpass.cgi - # This small front-end script initializes the environment
 # with site-specific configuration information, and then invokes the
-# "chpass" processor.
+# "chpass" processor. This is placed on the web server (either the
+# cgi-bin directory or the document tree), and all the other assets
+# reside off in the "web-chpass" lib directory.
+#
+# Part of the "web-chpass" package.
+# https://github.com/chip-rosenthal/web-chpass
+#
+# Chip Rosenthal
+# <chip@unicom.com>
 #
 
 #
@@ -12,25 +20,25 @@ CHPASS_LIBDIR='%LIBDIR%'
 export CHPASS_LIBDIR
 
 #
-# CHPASS_TEMPLATE - Name of the HTML template to use.  Resides
-# in $CHPASS_LIBDIR.
+# CHPASS_TEMPLATE - Name of the HTML template to use.  Resides in
+# $CHPASS_LIBDIR.
 #
 CHPASS_TEMPLATE='chpass.tmpl'
 export CHPASS_TEMPLATE
 
 #
-# CHPASS_BADPW_CHECKS - Bad password check mode.  Possible values are:
-# "enabled", "disabled", or "optional".
+# CHPASS_ENABLE_BADPW_CHECK - If true (non-zero), enable check for
+# bad passwords.
 #
-CHPASS_BADPW_CHECKS='%BADPW_CHECKS%'
-export CHPASS_BADPW_CHECKS
+CHPASS_ENABLE_BADPW_CHECK='%ENABLE_BADPW_CHECK%'
+export CHPASS_ENABLE_BADPW_CHECK
 
 #
-# FORCE_HTTPS - Force insecure connections (http) to secure connections
-# (https).  Possible values are: enabled, disabled.
+# CHPASS_FORCE_HTTPS - If true (non-zero), redirect an insecure
+# connection (http) to a secure connection (https).
 #
-FORCE_HTTPS='%FORCE_HTTPS%'
-export FORCE_HTTPS
+CHPASS_FORCE_HTTPS='%FORCE_HTTPS%'
+export CHPASS_FORCE_HTTPS
 
 #
 # Go exec the chpass processor - should not return.

@@ -1,5 +1,11 @@
 /*
  * nipasswd.c - Non-interactive password utility.
+ *
+ * Part of the "web-chpass" package.
+ * https://github.com/chip-rosenthal/web-chpass
+ *
+ * Chip Rosenthal
+ * <chip@unicom.com>
  */
 
 #include <sys/types.h>

@@ -15,11 +15,17 @@
 #	CHPASS_TEMPLATE - Name of the HTML template to use.  Either a full
 #	pathname or name of a file in $CHPASS_LIBDIR.
 #
-#	CHPASS_BADPW_CHECKS - Bad password check mode.	Possible values
-#	are: "enabled", "disabled", or "optional".
+#       CHPASS_ENABLE_ADPW_CHECKS - If true (non-zero), enable check
+#       for bad passwords.
 #
-#	FORCE_HTTPS - Force insecure connections (http) to secure
-#	connections (https).  Possible values are: enabled, disabled.
+#       CHPASS_FORCE_HTTPS - If true (non-zero), redirect an
+#       insecure connection (http) to a secure connection (https).
+#
+# Part of the "web-chpass" package.
+# https://github.com/chip-rosenthal/web-chpass
+#
+# Chip Rosenthal
+# <chip@unicom.com>
 #
 
 BEGIN {
@@ -35,10 +41,12 @@ use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Template;
 
-$NiPasswd::PATH_NIPASSWD = "$LIBDIR/nipasswd";
 my $Template = $ENV{'CHPASS_TEMPLATE'} || "chpass.tmpl";
-my $Badpw_checks = $ENV{'CHPASS_BADPW_CHECKS'} || "optional";
-my $Force_https = $ENV{'FORCE_HTTPS'} || "enabled";
+my $Enable_badpw_check = !!$ENV{'CHPASS_ENABLE_BADPW_CHECK'};
+my $Force_https = !!$ENV{'CHPASS_FORCE_HTTPS'};
+
+$NiPasswd::PATH_NIPASSWD = "$LIBDIR/nipasswd";
+$NiPasswd::STRICT_CHECKS = $Enable_badpw_check;
 
 
 sub send_doc
@@ -77,23 +85,27 @@ sub send_redirect
 #
 
 
-if ($Force_https ne "disabled" && $ENV{'HTTPS'} ne "on") {
+if ($Force_https && $ENV{'HTTPS'} ne "on") {
 	send_redirect("https://" . $ENV{'SERVER_NAME'} . $ENV{'REQUEST_URI'});
 }
 
 my $q = new CGI;
 
+# Parameter values for the HTML template.
 my $vars = {
+
+        # Values relating to the alert box.
 	message => {
 		content => "",
 		class => "alert",
 	},
+
+        # Values relating to the HTML form.
 	form => {
 		enable => 1,
-		enable_badpw_check => ($Badpw_checks eq "optional"),
 		username => "",
-		badpw_check => 1,
 	},
+
 };
 
 #
@@ -139,19 +151,6 @@ if ($new_passwd ne $new_passwd2) {
 }
 
 #
-# Determine whether to do bad password checking.
-#
-if ($Badpw_checks eq "enabled") {
-	$NiPasswd::STRICT_CHECKS = 1;
-} elsif ($Badpw_checks eq "disabled") {
-	$NiPasswd::STRICT_CHECKS = 0;
-} elsif ($Badpw_checks eq "optional") {
-	$NiPasswd::STRICT_CHECKS = !!$q->param('strict_checks');
-} else {
-	die("CONFIGURATION ERROR: bad CHPASS_BADPW_CHECKS setting");
-}
-
-#
 # Run the password changer.
 #
 my ($rc, $resp) = NiPasswd::change_passwd($username, $old_passwd, $new_passwd);
@@ -180,7 +179,8 @@ if ($rc == 0) {
 
 if ($rc == 2) {
 	$resp =~ s/^/Password not changed. /;
-	$vars->{'message'}->{'content'} = $resp . "<br />Check that you entered your username and current password correctly.";
+	$resp .= "<br />Check that you entered your username and current password correctly.";
+	$vars->{'message'}->{'content'} = $resp;
 	send_doc($vars);
 }
 

@@ -1,6 +1,6 @@
-Installation instructions for the "web-chpass" package:
+# Installation Instructions for the "web-chpass" Package
 
-=== STEP 0: Prerequisites
+## STEP 0: Prerequisites
 
 To build and install this package, you will need the essential
 build tools, as well the PAM development library. On Debian Linux
@@ -13,7 +13,7 @@ I ran:
 
 	$ sudo apt-get install libtemplate-perl
 
-=== STEP 1: Configure the package
+## STEP 1: Configure the package
 
 This is IMPORTANT.
 
@@ -21,7 +21,7 @@ There are several definitions in the Makefile to configure this package.
 Edit the Makefile, read through the settings, and adjust them as needed.
 
 
-=== STEP 2: Build and install the package
+## STEP 2: Build and install the package
 
 Build by running:
 
@@ -32,7 +32,7 @@ Install by running:
 	$ sudo make install
 
 
-=== STEP 3: Test the nipasswd utility
+## STEP 3: Test the nipasswd utility
 
 The "nipasswd" utility performs the low-level password change operation.
 It must be working before the web application can be used.
@@ -71,7 +71,7 @@ to set.  Then type CTRL/D.  Now you can verify that the password has
 been changed.
 
 
-=== STEP 4: Install the web application
+## STEP 4: Install the web application
 
 The "make install" step placed a "chpass" CGI script into your "cgi-bin"
 directory, something like /usr/local/lib/cgi-bin. If your webserver
@@ -90,7 +90,7 @@ If you are running Apache 2.4, for instance, configure this directory with:
 	</Directory>
 
 
-=== STEP 5: Test the application
+## STEP 5: Test the application
 
 Depending on how you configured the web application (step 4 above),
 you can now run it by browsing:
@@ -98,7 +98,7 @@ you can now run it by browsing:
 	https://www.example.com/cgi-bin/chpass
 
 
-=== STEP 6: Customize the template
+## STEP 6: Customize the template
 
 If you wish, you can customize the "chpass.tmpl" file.
 
@@ -135,7 +135,7 @@ The available template variables are:
 	check selection (if enabled).
 
 
-=== LDAP Notes
+## LDAP Notes
 
 This package can be used even if the user databsae is in LDAP.
 
@@ -146,4 +146,12 @@ The only thing you'll need to do is ensure that both "rootpwmoddn" and
 "rootpwmodpw" are defined in your /etc/nslcd.conf file. That's needed
 so the root user can change other users' passwords.
 
+
+## Author
+
+This document is part of the "web-chpass" package.
+https://github.com/chip-rosenthal/web-chpass
+
+Chip Rosenthal
+<chip@unicom.com>
 

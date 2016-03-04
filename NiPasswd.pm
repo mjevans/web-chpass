@@ -5,6 +5,12 @@
 # See perl POD documentation at end.
 # To view, run:  perldoc NiPasswd.pm
 #
+# Part of the "web-chpass" package.
+# https://github.com/chip-rosenthal/web-chpass
+#
+# Chip Rosenthal
+# <chip@unicom.com>
+#
 
 use strict;
 use warnings;
