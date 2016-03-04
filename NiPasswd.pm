@@ -19,12 +19,12 @@ use IO::File;
 package NiPasswd;
 
 our $PATH_NIPASSWD = "/usr/local/lib/web-chpass/nipasswd";
-our $STRICT_CHECKS = 1;
+our $DEBUG = 0;
 
 require Exporter;
 use vars qw(@ISA @EXPORT);
 @ISA = qw(Exporter);
-@EXPORT = qw($PATH_NIPASSWD $STRICT_CHECKS);
+@EXPORT = qw($PATH_NIPASSWD $DEBUG);
 
 
 sub _run_nipasswd
@@ -32,6 +32,9 @@ sub _run_nipasswd
 	die 'usage: _run_nipasswd($input_file, [$options, ...])'
 		unless(@_ > 0);
 	my $input_file = shift;
+        if ($DEBUG) {
+                unshift(@_, "-D");
+        }
 	my $options = join(' ', @_);
 
 	#
@@ -71,7 +74,7 @@ sub change_passwd
 	$fh->print($new_password, "\n");
 	$fh->close();
 
-	my @ret = _run_nipasswd($fname, ($STRICT_CHECKS ? '-c' : ''));
+	my @ret = _run_nipasswd($fname);
 	unlink($fname);
 	return @ret;
 }
@@ -109,7 +112,6 @@ NiPasswd - non-interactive password change or verify
  use NiPasswd;
 
  $NiPasswd::PATH_NIPASSWD = "/usr/local/lib/web-chpass/nipasswd";
- $NiPasswd::STRICT_CHECKS = 1;
 
  ($rc, $resp) = NiPasswd::auth_user($username, $password);
  ($rc, $resp) = NiPasswd::change_passwd($username, $old_password, $new_password);
@@ -134,9 +136,7 @@ I<username> and I<password>.
 
 First, authenticate a user through the PAM subsystem, given the specified
 I<username> and I<old_password>.  If authentication passes, then change
-the account password to I<new_password>.  Bad password checks may optionally
-be enabled, and the change will be refused if I<new_password> fails the
-checks.
+the account password to I<new_password>.
 
 =back
 
@@ -164,10 +164,9 @@ system:
 Pathname to the I<nipasswd(8)> command.  This may be used if the
 default value I</usr/local/lib/web-chpass/nipasswd> is not correct.
 
-=item B<$NiPasswd::STRICT_CHECKS>
+=item B<$NiPasswd::DEBUG>
 
-Boolean flag to enable or disable the bad password checks.  By default,
-it is enabled.
+If set non-zero, enables debugging output from I<nipasswd>.
 
 =back
 

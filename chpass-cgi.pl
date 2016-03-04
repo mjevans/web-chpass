@@ -15,12 +15,6 @@
 #	CHPASS_TEMPLATE - Name of the HTML template to use.  Either a full
 #	pathname or name of a file in $CHPASS_LIBDIR.
 #
-#       CHPASS_ENABLE_ADPW_CHECKS - If true (non-zero), enable check
-#       for bad passwords.
-#
-#       CHPASS_FORCE_HTTPS - If true (non-zero), redirect an
-#       insecure connection (http) to a secure connection (https).
-#
 # Part of the "web-chpass" package.
 # https://github.com/chip-rosenthal/web-chpass
 #
@@ -42,11 +36,9 @@ use CGI::Carp qw(fatalsToBrowser);
 use Template;
 
 my $Template = $ENV{'CHPASS_TEMPLATE'} || "chpass.tmpl";
-my $Enable_badpw_check = !!$ENV{'CHPASS_ENABLE_BADPW_CHECK'};
-my $Force_https = !!$ENV{'CHPASS_FORCE_HTTPS'};
+my $Force_https = 1;
 
 $NiPasswd::PATH_NIPASSWD = "$LIBDIR/nipasswd";
-$NiPasswd::STRICT_CHECKS = $Enable_badpw_check;
 
 
 sub send_doc

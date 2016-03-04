@@ -35,11 +35,6 @@ is correct for the
 account, and then attempts to change it to
 .IR new_password .
 .P
-If the
-.B \-c
-option is given, bad password checks are enabled and the new password
-will be denied if those checks fail.  If this option is not specified
-then the results of the bad password checks are suppressed.
 .P
 If the
 .B \-a
@@ -89,25 +84,7 @@ This utility does not implement any guards against dictionary attacks on
 account passwords, other than invoking a delay penalty on authentication
 failures.
 .P
-This utility is intentionally ambiguous as to whether an authentication
-failure is due to a non-existent username or bad password.  This helps
-prevent fishing for valid accounts.
-.P
-If you enforce a "bad passwords not allowed" policy on your system, then
-you should ensure this utility is not available to users.  Otherwise, they
-will be able to circumvent that policy.
-.P
-The PAM abstraction model is completely wrong for an application such
-as this.  Coded into this utility is knowledge of the prompting sequence
-that PAM uses for authentication and password changing.  That sequence,
-however, could easily change, say under a different module stack.
-If that happens, this utility will break.  This completely defeats the
-purpose of abstracting the authentication process.  It's hard to imagine
-how anybody thought this would be a good idea.
-.P
-This utility assumes the bad password checks are implemented by PAM.
-It also assumes that a bad password is signaled by a PAM_ERROR_MSG
-following initial entry of the new password.
+The PAM API makes my head hurt.
 .SH AUTHOR
 .nf
 This file is part of the "web-chpass" package.

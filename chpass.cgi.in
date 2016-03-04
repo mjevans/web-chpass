@@ -27,20 +27,6 @@ CHPASS_TEMPLATE='chpass.tmpl'
 export CHPASS_TEMPLATE
 
 #
-# CHPASS_ENABLE_BADPW_CHECK - If true (non-zero), enable check for
-# bad passwords.
-#
-CHPASS_ENABLE_BADPW_CHECK='%ENABLE_BADPW_CHECK%'
-export CHPASS_ENABLE_BADPW_CHECK
-
-#
-# CHPASS_FORCE_HTTPS - If true (non-zero), redirect an insecure
-# connection (http) to a secure connection (https).
-#
-CHPASS_FORCE_HTTPS='%FORCE_HTTPS%'
-export CHPASS_FORCE_HTTPS
-
-#
 # Go exec the chpass processor - should not return.
 #
 exec $CHPASS_LIBDIR/chpass-cgi.pl

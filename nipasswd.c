@@ -19,7 +19,7 @@
 #include <assert.h>
 #include <security/pam_appl.h>
 
-#define USAGE			"usage: %s [-ac]"
+#define USAGE			"usage: %s [-Da]"
 #define NIPASSWD_PAM_SERVICE	"nipasswd"
 #define FAIL_DELAY		5 /* secs */
 #define BUFLEN			512
@@ -40,7 +40,6 @@
 
 int Debug = 0;			/* enable debugging messages		*/
 int Do_auth_only = 0;		/* authenticate but don't change passwd	*/
-int Do_passwd_checks = 0;	/* do bad password checks		*/
 
 /*
  * This information is global so it can be accessed by die().
@@ -69,7 +68,7 @@ int main(int argc, char *argv[])
 	struct pam_conv pam_conv = { pam_conv_func, NULL };
 	int i;
 
-	while ((i = getopt(argc, argv, "Dac")) != EOF) {
+	while ((i = getopt(argc, argv, "Da")) != EOF) {
 		switch (i) {
 		case 'D':
 			Debug = 1;
@@ -77,19 +76,12 @@ int main(int argc, char *argv[])
 		case 'a':
 			Do_auth_only = 1;
 			break;
-		case 'c':
-			Do_passwd_checks = 1;
-			break;
 		default:
 			die(EX_ERROR, USAGE, argv[0]);
 		}
 	}
 	if (argc-optind != 0) {
 		die(EX_ERROR, USAGE, argv[0]);
-	}
-
-	if (setreuid(0, 0) != 0) {
-		die(EX_ERROR, "SYSTEM ERROR: setreuid failed: %m");
 	}
 
 	fgetline(username, sizeof(username), stdin);
@@ -115,52 +107,37 @@ int main(int argc, char *argv[])
 	pam_fail_delay(pam_h, FAIL_DELAY*1000);
 #endif
 
-	/*
-	 * Attempt to authenticate the user.
-	 */
-	pam_rc = pam_authenticate(pam_h, 0);
-	switch (pam_rc) {
-	case PAM_USER_UNKNOWN:
-	case PAM_AUTH_ERR:
-		die(EX_DENIED, "Access denied.");
-	case PAM_SUCCESS:
-		break;
-	default:
-		die(EX_ERROR, "PAM error authenticating user: %s",
-			pam_strerror(pam_h, pam_rc));
-	}
+	if (Do_auth_only) {
 
-	/*
-	 * PAM session crap.
-	 */
-	pam_rc = pam_acct_mgmt(pam_h, 0);
-	switch (pam_rc) {
-	case PAM_SUCCESS:
-		break;
-	case PAM_NEW_AUTHTOK_REQD:
-		die(EX_ERROR, "This account has expired.  Please contact system administrator to re-activate.");
-	default:
-		die(EX_ERROR, "User account management error: %s:",
-			pam_strerror(pam_h, pam_rc));
-	}
-	pam_rc = pam_setcred(pam_h, PAM_ESTABLISH_CRED);
-	if (pam_rc != PAM_SUCCESS) {
-		die(EX_ERROR, "Error setting user credentials: %s:",
-			pam_strerror(pam_h, pam_rc));
-	}
+                /*
+                 * Attempt to authenticate the user.
+                 */
+                pam_rc = pam_authenticate(pam_h, 0);
+                switch (pam_rc) {
+                case PAM_USER_UNKNOWN:
+                case PAM_AUTH_ERR:
+                        die(EX_DENIED, "Access denied.");
+                case PAM_SUCCESS:
+                        break;
+                default:
+                        die(EX_ERROR, "PAM error authenticating user: %s",
+                                pam_strerror(pam_h, pam_rc));
+                }
 
-	/*
-	 * Attempt to change the password.
-	 */
-	if (!Do_auth_only) {
-		pam_rc = pam_chauthtok(pam_h, 0);
-		if (pam_rc != PAM_SUCCESS) {
-			die(EX_ERROR, "Error setting new password: %s:",
-				pam_strerror(pam_h, pam_rc));
-		}
-	}
+        } else {
 
-	Dprintf(stderr, ">>> Done!  Terminating with success exit status.\n");
+                /*
+                 * Attempt to change the password.
+                 */
+                pam_rc = pam_chauthtok(pam_h, 0);
+                if (pam_rc != PAM_SUCCESS) {
+                        die(EX_ERROR, "Error setting new password: %s:",
+                                pam_strerror(pam_h, pam_rc));
+                }
+
+        }
+
+	Dprintf(stderr, "main: terminating with success exit status\n");
 	(void) pam_end(pam_h, PAM_SUCCESS);
 	exit(EX_SUCCESS);
 }
@@ -192,7 +169,7 @@ int pam_conv_func(int num_msg, const struct pam_message **msg, struct pam_respon
 	int handled_this, i;
 
 	Dprintf(stderr,
-		"pam_conv_func>>> entered pam_conv_resp_count=%d num_msg=%d\n",
+		"pam_conv_func: entered, pam_conv_resp_count=%d num_msg=%d\n",
 		pam_conv_resp_count, num_msg);
 	resp_buf = calloc(num_msg, sizeof(struct pam_response));
 	if (resp_buf == NULL) {
@@ -219,6 +196,11 @@ int pam_conv_func(int num_msg, const struct pam_message **msg, struct pam_respon
 			case PAM_PROMPT_ECHO_OFF:
 				resp_buf[i].resp = xstrdup(old_password);
 				++pam_conv_resp_count;
+				handled_this = 1;
+				break;
+
+			case PAM_TEXT_INFO:
+				/* "Changing password for ..." */
 				handled_this = 1;
 				break;
 
@@ -269,12 +251,8 @@ int pam_conv_func(int num_msg, const struct pam_message **msg, struct pam_respon
 				break;
 
 			case PAM_ERROR_MSG:
-				/* "Changing password for ..." */
-				if (Do_passwd_checks) {
-					pam_rc = PAM_PERM_DENIED;
-					die(EX_BADPW, "%s", msg[i]->msg);
-				}
-				handled_this = 1;
+                                pam_rc = PAM_PERM_DENIED;
+                                die(EX_BADPW, "%s", msg[i]->msg);
 				break;
 
 			default:
@@ -292,6 +270,11 @@ int pam_conv_func(int num_msg, const struct pam_message **msg, struct pam_respon
 				handled_this = 1;
 				break;
 
+			case PAM_ERROR_MSG:
+                                pam_rc = PAM_PERM_DENIED;
+                                die(EX_BADPW, "%s", msg[i]->msg);
+				break;
+
 			default:
 				handled_this = 0;
 				break;
@@ -307,7 +290,7 @@ int pam_conv_func(int num_msg, const struct pam_message **msg, struct pam_respon
 
 		assert(handled_this >= 0);
 		Dprintf(stderr,
-			"pam_conv_func>>> msg_style=\"%s\" msg=\"%s\" resp=\"%s\"\n",
+			"pam_conv_func: msg_style=\"%s\" msg=\"%s\" resp=\"%s\"\n",
 			pam_msg_style_str(msg[i]->msg_style),
 			msg[i]->msg, resp_buf[i].resp);
 
@@ -373,7 +356,7 @@ void die(int exitstat, const char *fmt, ...)
 	putc('\n', stderr);
 
 	if (pam_h != NULL) {
-		Dprintf(stderr, ">>> terminating with PAM status: %s\n",
+		Dprintf(stderr, "die: terminating with PAM status: %s\n",
 			pam_strerror(pam_h, pam_rc));
 		(void) pam_end(pam_h, pam_rc);
 		pam_h = NULL;

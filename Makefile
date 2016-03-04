@@ -19,19 +19,6 @@ MIN_AUTH_UID = 100
 MIN_CHANGE_UID = 100
 
 #
-# If true (non-zero), enable check for bad passwords.
-#
-ENABLE_BADPW_CHECK = 1
-#ENABLE_BADPW_CHECK = 0
-
-#
-# If true (non-zero), redirect an insecure connection (http) to a secure
-# connection (https).
-#
-FORCE_HTTPS = 1
-#FORCE_HTTPS = 0
-
-#
 # The GID your web server uses when running CGIs.  For security reasons, the
 # privileged "nipasswd" will be installed with use restricted to this group.
 # Debian systems use "www-data". Red Hat systems use "apache".
@@ -116,11 +103,7 @@ nipasswd : $(OBJS)
 	$(CC) -o $@ $(CFLAGS) $(OBJS) $(LIBS)
 
 chpass.cgi : chpass.cgi.in Makefile
-	sed \
-		-e 's!%LIBDIR%!$(DIR_LIB)!g' \
-		-e 's!%ENABLE_BADPW_CHECK%!$(ENABLE_BADPW_CHECK)!g' \
-		-e 's!%FORCE_HTTPS%!$(FORCE_HTTPS)!g' \
-		$< >$@
+	sed -e 's!%LIBDIR%!$(DIR_LIB)!g' $< >$@
 
 clean :
 	rm -f $(ALL) $(OBJS)

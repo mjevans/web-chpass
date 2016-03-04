@@ -1,9 +1,12 @@
 Fri Mar  4 10:21:55 CST 2016
 
-        Renamed configuration setting BADPW_CHECKS to ENABLE_BADPW_CHECK
-        and made value 1/0 boolean.
+        Fixed nipasswd so it runs "obscure" checks correctly.
 
-        Changed FORCE_HTTPS value to 1/0 boolean.
+        Dropped ENABLE_BADPW_CHECK configuration setting. Bad password
+        check should always be run.
+
+        Dropped FORCE_HTTPS configuration setting and make secure
+        connection required.
 
         Converted INSTALL to INSTALL.md
 
