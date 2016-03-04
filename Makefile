@@ -96,9 +96,9 @@ INSTALL_ALL = \
 ALL = nipasswd chpass.cgi
 
 FILES = \
-	README \
+	README.md \
 	CHANGES \
-	INSTALL \
+	INSTALL.md \
 	Makefile \
 	NiPasswd.pm \
 	chpass-cgi.pl \
@@ -118,7 +118,7 @@ nipasswd : $(OBJS)
 chpass.cgi : chpass.cgi.in Makefile
 	sed \
 		-e 's!%LIBDIR%!$(DIR_LIB)!g' \
-		-e 's!%BADPW_CHECKS%!$(BADPW_CHECKS)!g' \
+		-e 's!%ENABLE_BADPW_CHECK%!$(ENABLE_BADPW_CHECK)!g' \
 		-e 's!%FORCE_HTTPS%!$(FORCE_HTTPS)!g' \
 		$< >$@
 
