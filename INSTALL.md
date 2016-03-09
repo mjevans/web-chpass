@@ -141,11 +141,11 @@ You'll need to need to do is ensure that both "rootpwmoddn" and
 "rootpwmodpw" are defined in your /etc/nslcd.conf file. That's needed
 so the root user can change other users' passwords.
 
-*MAJOR SECURITY ISSUE* -- Because the obscure password checks are
-part of the _pam_unix_ module, and the _pam_ldap_ module is used
-for LDAP password changes, users may be able to set trivial. This
-issue affects all password changing (e.g. even the _passwd_ command),
-not just this utility.
+*SECURITY ISSUE* -- In a default Debian Linux environment, LDAP users are
+allowed to set trivial passwrods. (That's because the "obscure" password
+enforcement is part of the "pam_unix" module, which is not run for LDAP
+password changing.) The fix is simple: install the "libpam-pwquality"
+package.
 
 
 ## Author
