@@ -137,9 +137,15 @@ This package can be used even if the user databsae is in LDAP.
 If your /etc/pam.d/passwd file is already setup for LDAP, that same
 configuration will be used for "nipasswd".
 
-The only thing you'll need to do is ensure that both "rootpwmoddn" and
+You'll need to need to do is ensure that both "rootpwmoddn" and
 "rootpwmodpw" are defined in your /etc/nslcd.conf file. That's needed
 so the root user can change other users' passwords.
+
+*MAJOR SECURITY ISSUE* -- Because the obscure password checks are
+part of the _pam_unix_ module, and the _pam_ldap_ module is used
+for LDAP password changes, users may be able to set trivial. This
+issue affects all password changing (e.g. even the _passwd_ command),
+not just this utility.
 
 
 ## Author
