@@ -55,7 +55,7 @@ char username[BUFLEN];
 char old_password[BUFLEN];
 char new_password[BUFLEN];
 
-int user_ok(const char *username);
+int user_ok(const char *username, struct passwd *save_pw);
 int pam_conv_func(int num_msg, const struct pam_message **msg, struct pam_response **resp, void *appdata_ptr);
 void fgetline(char *buf, size_t buflen, FILE *fp);
 char *xstrdup(const char *s);
@@ -93,9 +93,19 @@ int main(int argc, char *argv[])
 		die(EX_ERROR, "Excess input.");
 	}
 
-	if (!user_ok(username)) {
+	struct passwd pw;
+	if (!user_ok(username, &pw)) {
 		(void) sleep(FAIL_DELAY);
 		die(EX_DENIED, "Access denied.");
+	}
+
+	/*
+	 * Make sure our real UID matches the account that's being changed.
+	 * On Debian with pam_ldap, this is required else there is
+	 * a prompt for the LDAP admin passwd.
+	 */
+	if (setreuid(pw.pw_uid, 0) != 0) {
+		die(EX_ERROR, "Cannot set user id: %m");
 	}
 
 	pam_rc = pam_start(NIPASSWD_PAM_SERVICE, username, &pam_conv, &pam_h);
@@ -150,7 +160,7 @@ int main(int argc, char *argv[])
  * But so long as we are at it, we can bounce unknown users without the
  * overhead of stoking up PAM.
  */
-int user_ok(const char *username)
+int user_ok(const char *username, struct passwd *save_pw)
 {
 	struct passwd *pw;
 	if ((pw = getpwnam(username)) == NULL) {
@@ -158,6 +168,9 @@ int user_ok(const char *username)
 	}
 	if (pw->pw_uid < (Do_auth_only ? MIN_AUTH_UID : MIN_CHANGE_UID)) {
 		return 0;
+	}
+	if (save_pw != NULL) {
+		*save_pw = *pw;
 	}
 	return 1;
 }
