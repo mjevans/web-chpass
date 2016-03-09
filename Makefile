@@ -11,6 +11,8 @@
 # The following defintions MUST be adjusted for your installation.
 #
 
+USR = /usr/local
+
 #
 # Minimum UID settings, to protect system accounts.  nipasswd will refuse to
 # authorize or change accounts with UIDs below these thresholds.
@@ -30,12 +32,12 @@ CGI_GROUP = www-data
 # The web-chpass support files installed in this directory.  If the
 # directory does not exist, it will be created.
 #
-DIR_LIB = /usr/local/lib/web-chpass
+DIR_LIB = $(USR)/lib/web-chpass
 
 #
 # The chpass.cgi script installed in this directory.
 #
-DIR_CGI = /usr/local/lib/cgi-bin
+DIR_CGI = $(USR)/lib/cgi-bin
 
 #
 # Extension (if any) to place on script installed in DIR_CGI.
@@ -47,7 +49,7 @@ CGIEXT =
 # Directory where administrative manpages go.  The nipasswd(8) man page
 # will be put here.
 #
-DIR_MAN8 = /usr/local/man/man8
+DIR_MAN8 = $(USR)/man/man8
 
 #
 # PAM modules configuration directory.
