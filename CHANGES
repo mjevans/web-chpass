@@ -1,3 +1,9 @@
+20170504 - Minor tweaks for my day job -- github.com/mjevans
+	Rename limit variables in Makefile (config)
+	Make limits a min/max in Makefile & .c
+	Add group membership requirement in Makefile & .c
+	Make all limits optional if not-specified
+
 Fri Mar  4 10:21:55 CST 2016
 
         Fixed nipasswd so it runs "obscure" checks correctly.

@@ -2,6 +2,10 @@
 # Part of the "web-chpass" package.
 # https://github.com/chip-rosenthal/web-chpass
 #
+# Additional Changes / Tweaks
+# github.com/mjevans
+#
+#
 # Chip Rosenthal
 # <chip@unicom.com>
 #
@@ -17,8 +21,21 @@ USR = /usr/local
 # Minimum UID settings, to protect system accounts.  nipasswd will refuse to
 # authorize or change accounts with UIDs below these thresholds.
 #
-MIN_AUTH_UID = 100
-MIN_CHANGE_UID = 100
+# -1 to disable check (presently check is for any negative number, but -1 for forward compat)
+
+# Minimum/Maximum user ID to authorize account (-a auth only)
+AUTH_MIN_UID = -1
+AUTH_MAX_UID = -1
+
+# Minimum/Maximum user ID of account to //effect// (change password)
+CHANGE_MIN_UID = -1
+CHANGE_MAX_UID = -1
+
+# : separated list of group name/IDs to allow auth / change within, : to disable
+
+AUTH_GROUP_REQ = :
+CHANGE_GROUP_REQ = :
+
 
 #
 # The GID your web server uses when running CGIs.  For security reasons, the
@@ -64,7 +81,7 @@ DIR_PAMD = /etc/pam.d
 
 CC = gcc
 OPTIM = -O2 -Wall
-DEFS = -DMIN_AUTH_UID=$(MIN_AUTH_UID) -DMIN_CHANGE_UID=$(MIN_CHANGE_UID)
+DEFS = -DAUTH_MIN_UID=$(AUTH_MIN_UID) -DAUTH_MAX_UID=$(AUTH_MAX_UID) -DCHANGE_MIN_UID=$(CHANGE_MIN_UID) -DCHANGE_MAX_UID=$(CHANGE_MAX_UID) -D AUTH_GROUP_REQ=$(AUTH_GROUP_REQ) -DCHANGE_GROUP_REQ=$(CHANGE_GROUP_REQ)
 CFLAGS = $(OPTIM) $(DEFS)
 LIBS = -lpam -ldl
 

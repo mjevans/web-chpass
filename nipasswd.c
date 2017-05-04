@@ -15,6 +15,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <pwd.h>
+#include <grp.h>
 #include <errno.h>
 #include <assert.h>
 #include <security/pam_appl.h>
@@ -22,13 +23,29 @@
 #define USAGE			"usage: %s [-Da]"
 #define NIPASSWD_PAM_SERVICE	"nipasswd"
 #define FAIL_DELAY		5 /* secs */
-#define BUFLEN			512
+#define BUFLEN			65536 /* Allow /very/ long passwords */
+#define BUFGRP			512 /* Normally this should be 32 characters or less, 511 is way overkill */
 
-#ifndef MIN_AUTH_UID
-# define MIN_AUTH_UID	100	/* do not auth users below this uid	*/
+/* DEFS = -DAUTH_MIN_UID=$(AUTH_MIN_UID) -DAUTH_MAX_UID=$(AUTH_MAX_UID) -DCHANGE_MIN_UID=$(CHANGE_MIN_UID) -DCHANGE_MAX_UID=$(CHANGE_MAX_UID) -DCHANGE_GROUP_REQ=$(CHANGE_GROUP_REQ) */
+
+#ifndef AUTH_MIN_UID
+# define AUTH_MIN_UID	-1	/* do not auth users below this uid	*/
 #endif
-#ifndef MIN_CHANGE_UID
-# define MIN_CHANGE_UID	100	/* do not change users below this uid	*/
+#ifndef CHANGE_MIN_UID
+# define CHANGE_MIN_UID	-1	/* do not change users below this uid	*/
+#endif
+#ifndef AUTH_MAX_UID
+# define AUTH_MAX_UID	-1	/* do not auth users below this uid	*/
+#endif
+#ifndef CHANGE_MAX_UID
+# define CHANGE_MAX_UID	-1	/* do not change users below this uid	*/
+#endif
+#define STRING_LOCAL(x) #x
+#ifndef AUTH_GROUP_REQ
+# define AUTH_GROUP_REQ :       /* If no valid groups are enumerated then this check is disabled */
+#endif
+#ifndef CHANGE_GROUP_REQ
+# define CHANGE_GROUP_REQ :     /* If no valid groups are enumerated then this check is disabled */
 #endif
 
 #define EX_SUCCESS	0	/* password successfully changed	*/
@@ -61,6 +78,8 @@ void fgetline(char *buf, size_t buflen, FILE *fp);
 char *xstrdup(const char *s);
 void die(int exitstat, const char *fmt, ...);
 const char *pam_msg_style_str(int n);
+int valid_auth_id(int uid); /* Return 0 on failure */
+int valid_user_id(int uid); /* Return 0 on failure */
 
 
 int main(int argc, char *argv[])
@@ -163,15 +182,69 @@ int main(int argc, char *argv[])
 int user_ok(const char *username, struct passwd *save_pw)
 {
 	struct passwd *pw;
+	struct group *gstat;
+	char *ts, *te, gbuf[BUFGRP];
+	char gs[] = ":";
+	size_t offset;
+	int group_ok = 0, group_exists = 0;
+
 	if ((pw = getpwnam(username)) == NULL) {
 		return 0;
 	}
-	if (pw->pw_uid < (Do_auth_only ? MIN_AUTH_UID : MIN_CHANGE_UID)) {
+	if (pw->pw_uid < (Do_auth_only ? AUTH_MIN_UID : CHANGE_MIN_UID) && (int)0 <= (int)(Do_auth_only ? AUTH_MIN_UID : CHANGE_MIN_UID)) {
 		return 0;
 	}
+	if (pw->pw_uid > (Do_auth_only ? AUTH_MAX_UID : CHANGE_MAX_UID) && (int)0 <= (int)(Do_auth_only ? AUTH_MAX_UID : CHANGE_MAX_UID)) {
+		return 0;
+	}
+
+	if (Do_auth_only){
+		ts = STRING_LOCAL(AUTH_GROUP_REQ);
+	} else {
+		ts = STRING_LOCAL(CHANGE_GROUP_REQ);
+	}
+	while(NULL != ts && 0 == group_ok) {
+		te = strpbrk(ts, gs);
+		if(NULL == te) {
+			strncpy(gbuf, ts, BUFGRP);
+			gbuf[BUFGRP - 1] = '\0';
+		} else {
+			offset = te - ts;
+			if (offset > BUFGRP - 1) {
+				offset = BUFGRP - 1;
+			}
+			strncpy(gbuf, ts, offset);
+			gbuf[offset] = '\0';
+		}
+		ts = te;
+		if(strlen(gbuf) < 1) {
+			continue;
+		}
+		errno = 0;
+		gstat = getgrnam(gbuf);
+		if(0 != errno){
+			die(EX_ERROR, "FATAL ERROR resolving group \"%s\" via getgrnam: errno %d: %s\n", gbuf, errno, strerror(errno));
+		}
+		group_exists = 1;
+		if(gstat->gr_gid == pw->pw_gid){
+			group_ok = 1;
+		} else {
+			for(offset=0; NULL != (gstat->gr_mem)[offset]; offset++) {
+				if(0 == strcmp(pw->pw_name, (gstat->gr_mem)[offset])) {
+					group_ok = 1;
+					break;
+				}
+			}
+		}
+	}
+	if (0 == group_ok && 1 == group_exists) {
+		return 0;
+	}
+
 	if (save_pw != NULL) {
 		*save_pw = *pw;
 	}
+
 	return 1;
 }
 
