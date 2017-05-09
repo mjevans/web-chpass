@@ -78,8 +78,6 @@ void fgetline(char *buf, size_t buflen, FILE *fp);
 char *xstrdup(const char *s);
 void die(int exitstat, const char *fmt, ...);
 const char *pam_msg_style_str(int n);
-int valid_auth_id(int uid); /* Return 0 on failure */
-int valid_user_id(int uid); /* Return 0 on failure */
 
 
 int main(int argc, char *argv[])
