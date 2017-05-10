@@ -29,24 +29,29 @@
 /* DEFS = -DAUTH_MIN_UID=$(AUTH_MIN_UID) -DAUTH_MAX_UID=$(AUTH_MAX_UID) -DCHANGE_MIN_UID=$(CHANGE_MIN_UID) -DCHANGE_MAX_UID=$(CHANGE_MAX_UID) -DCHANGE_GROUP_REQ=$(CHANGE_GROUP_REQ) */
 
 #ifndef AUTH_MIN_UID
-# define AUTH_MIN_UID	-1	/* do not auth users below this uid	*/
+#define AUTH_MIN_UID	-1	/* do not auth users below this uid	*/
 #endif
 #ifndef CHANGE_MIN_UID
-# define CHANGE_MIN_UID	-1	/* do not change users below this uid	*/
+#define CHANGE_MIN_UID	-1	/* do not change users below this uid	*/
 #endif
 #ifndef AUTH_MAX_UID
-# define AUTH_MAX_UID	-1	/* do not auth users below this uid	*/
+#define AUTH_MAX_UID	-1	/* do not auth users below this uid	*/
 #endif
 #ifndef CHANGE_MAX_UID
-# define CHANGE_MAX_UID	-1	/* do not change users below this uid	*/
+#define CHANGE_MAX_UID	-1	/* do not change users below this uid	*/
 #endif
 #define STRING_LOCAL(x) #x
 #ifndef AUTH_GROUP_REQ
-# define AUTH_GROUP_REQ :       /* If no valid groups are enumerated then this check is disabled */
+#define AUTH_GROUP_REQ :	/* If no valid groups are enumerated then this check is disabled */
 #endif
 #ifndef CHANGE_GROUP_REQ
-# define CHANGE_GROUP_REQ :     /* If no valid groups are enumerated then this check is disabled */
+#define CHANGE_GROUP_REQ :	/* If no valid groups are enumerated then this check is disabled */
 #endif
+
+#define QUOTE(name)		#name
+#define STR(macro)		QUOTE(macro)
+#define CHANGE_GROUP_STR	STR(CHANGE_GROUP_REQ)
+#define AUTH_GROUP_STR		STR(AUTH_GROUP_REQ)
 
 #define EX_SUCCESS	0	/* password successfully changed	*/
 #define EX_ERROR	1	/* failed due to an error		*/
@@ -197,9 +202,9 @@ int user_ok(const char *username, struct passwd *save_pw)
 	}
 
 	if (Do_auth_only){
-		ts = STRING_LOCAL(AUTH_GROUP_REQ);
+		ts = AUTH_GROUP_STR;
 	} else {
-		ts = STRING_LOCAL(CHANGE_GROUP_REQ);
+		ts = CHANGE_GROUP_STR;
 	}
 	while(NULL != ts && 0 == group_ok) {
 		te = strpbrk(ts, gs);
@@ -213,6 +218,7 @@ int user_ok(const char *username, struct passwd *save_pw)
 			}
 			strncpy(gbuf, ts, offset);
 			gbuf[offset] = '\0';
+			te++;
 		}
 		ts = te;
 		if(strlen(gbuf) < 1) {
@@ -222,6 +228,10 @@ int user_ok(const char *username, struct passwd *save_pw)
 		gstat = getgrnam(gbuf);
 		if(0 != errno){
 			die(EX_ERROR, "FATAL ERROR resolving group \"%s\" via getgrnam: errno %d: %s\n", gbuf, errno, strerror(errno));
+		}
+		if (NULL == gstat) {
+			Dprintf(stderr, "test user_ok: Group isn't NULL but getgrnam is: %s\n", gbuf);
+			continue;
 		}
 		group_exists = 1;
 		if(gstat->gr_gid == pw->pw_gid){
