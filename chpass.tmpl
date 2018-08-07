@@ -2,33 +2,13 @@
 <html lang="en-US">
 <head>
 <title>Change My Password</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <style type="text/css">
 /* http://meyerweb.com/eric/tools/css/reset/ 
    v2.0 | 20110126
    License: none (public domain)
 */
 
-html, body, div, span, applet, object, iframe,
-h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-a, abbr, acronym, address, big, cite, code,
-del, dfn, em, img, ins, kbd, q, s, samp,
-small, strike, strong, sub, sup, tt, var,
-b, u, i, center,
-dl, dt, dd, ol, ul, li,
-fieldset, form, label, legend,
-table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, embed, 
-figure, figcaption, footer, header, hgroup, 
-menu, nav, output, ruby, section, summary,
-time, mark, audio, video {
-	margin: 0;
-	padding: 0;
-	border: 0;
-	font-size: 100%;
-	font: inherit;
-	vertical-align: baseline;
-}
 /* HTML5 display-role reset for older browsers */
 article, aside, details, figcaption, figure, 
 footer, header, hgroup, menu, nav, section {
@@ -104,6 +84,11 @@ td {
 	float: right;
 }
 
+.notes li {
+        margin-bottom: 0.5em;
+        list-style-type: square;
+}
+
 </style>
 </head>
 <body>
@@ -157,6 +142,44 @@ td {
 
 </form>
 [% END %]
+
+<div class="notes">
+<p>
+We've configured a password quality checker to allow both XKCD style passwords (with sufficient entropy) and machine generated “password manager” (E.G. <a href="https://en.wikipedia.org/wiki/KeePass">keepass</a>) style passwords.
+</p>
+
+<h4>Training on secure passwords:</h4>
+
+<ul>
+<li><a href="https://www.explainxkcd.com/wiki/index.php/936:_Password_Strength">Password Strength (explain XKCD)</a></li>
+<li><a href="https://www.explainxkcd.com/wiki/index.php/792:_Password_Reuse">Password Reuse (explain XKCD)</a></li>
+</ul>
+
+<p>
+As of the last update, the security requirements enforced by our server are precisely... (<a href="http://manpages.ubuntu.com/manpages/bionic/man5/passwdqc.conf.5.html">passwdqc.conf</a>)
+</p>
+<pre>
+min=48,24,11,8,7
+max=512
+passphrase=3
+match=4
+similar=deny
+random=32
+enforce=everyone
+retry=0
+</pre>
+
+<strong>In human wording:</strong>
+
+<ul>
+<li>A passphrase made up of only alphabetical letters (or any other singular category, but this is intended for letters) must be at least 48 units long.</li>
+<li>One mixing letters and any other symbols must be at least 24 long.</li>
+<li>One mixing both and including weird characters must be at least 11 long (and must also have 3 distinct ‘words’).</li>
+<li>Extremely dense machine created passphrases must be 8 or 7 characters, depending on if it uses most or all classes of input characters.</li>
+<li>Passwords are also not allowed to be substantively similar to the old one.<br />
+(The password library knows what the existing password is only because this material is provided in order to authenticate and obtain the privilege of changing the password; it isn’t stored in plain-text on the disk.)</li>
+</ul>
+</div>
 
 <div class="footer">
 <div class="left">[ <a href="/">home</a> ]</div>
